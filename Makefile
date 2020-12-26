@@ -8,6 +8,7 @@ MAKO_VERSION ?= master
 WF_RECORDER_VERSION ?= master
 CLIPMAN_VERSION ?= master
 PIPEWIRE_VERSION ?= master
+SWAYIDLE_VERSION ?= master
 
 ifdef UPDATE
 	UPDATE_STATEMENT = git pull;
@@ -110,7 +111,7 @@ PIP_PACKAGES=ninja meson
 
 NINJA_CLEAN_BUILD_INSTALL=$(UPDATE_STATEMENT) sudo ninja -C build uninstall; sudo rm build -rf; meson build; ninja -C build; sudo ninja -C build install
 
-yolo: install-repos install-dependencies wlroots-build sway-build kanshi-build waybar-build swaylock-build mako-build wf-recorder-build clipman-build wofi-build nm-applet-install
+yolo: install-repos install-dependencies wlroots-build sway-build kanshi-build waybar-build swaylock-build mako-build wf-recorder-build clipman-build wofi-build swayidle-build nm-applet-install
 
 install-repos:
 	@git clone https://github.com/swaywm/sway.git || echo "Already installed"
@@ -124,6 +125,7 @@ install-repos:
 	@git clone https://github.com/PipeWire/pipewire.git || echo "Already installed"
 	@git clone https://github.com/emersion/xdg-desktop-portal-wlr.git || echo "Already installed"
 	@hg clone https://hg.sr.ht/~scoopta/wofi || echo "Already installed"
+	@git clone https://github.com/swaywm/swayidle.git || echo "Already installed"
 
 install-dependencies:
 	# PPA required in 20.04 after https://github.com/swaywm/wlroots/pull/2222
@@ -170,6 +172,9 @@ mako-build:
 
 wf-recorder-build:
 	cd wf-recorder; git fetch; git checkout $(WF_RECORDER_VERSION); $(NINJA_CLEAN_BUILD_INSTALL)
+
+swayidle-build:
+	cd swayidle; git fetch; git checkout $(SWAYIDLE_VERSION); $(NINJA_CLEAN_BUILD_INSTALL)
 
 clipman-build:
 	cd clipman; git fetch; git checkout $(CLIPMAN_VERSION); go install

@@ -19,6 +19,7 @@ Apps provided (make sure you do not install these via Ubuntu's package repos):
   * waybar
   * wf-recorder
   * wofi
+  * swayidle
 
 Experimental:
 
