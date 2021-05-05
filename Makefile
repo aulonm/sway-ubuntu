@@ -9,6 +9,7 @@ WF_RECORDER_VERSION ?= master
 CLIPMAN_VERSION ?= master
 PIPEWIRE_VERSION ?= master
 SWAYIDLE_VERSION ?= master
+XDG_DESKTOP_PORTAL_VERSION ?= 45699637d1c71842372323d39deb9f9a43a0fd7e
 
 ifdef UPDATE
 	UPDATE_STATEMENT = git pull;
@@ -200,4 +201,4 @@ pipewire-remove:
 	cd pipewire; sudo ninja -C build uninstall
 
 xdg-desktop-portal-wlr-build:
-	cd xdg-desktop-portal-wlr; git fetch; git checkout $(WF_RECORDER_VERSION); $(NINJA_CLEAN_BUILD_INSTALL)
+	cd xdg-desktop-portal-wlr; git fetch; git checkout $(XDG_DESKTOP_PORTAL_VERSION); $(NINJA_CLEAN_BUILD_INSTALL)
