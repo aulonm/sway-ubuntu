@@ -1,6 +1,6 @@
-# Sway builds for Ubuntu 20.04
+# Sway builds for Ubuntu 21.04
 
-Ubuntu 20.04 build system for sway and related tools.
+Ubuntu 21.04 build system for sway and related tools.
 
 Even though most of these tools (including sway and wlroots) are now available in Ubuntu, they move and evolve pretty quickly and I personally prefer to keep up to date with those.
 
@@ -20,14 +20,14 @@ Apps provided (make sure you do not install these via Ubuntu's package repos):
   * wf-recorder
   * wofi
   * swayidle
+  * nwg-panel
+  * xdg-dekstop-portal-wlr (for screen sharing)
 
-Experimental:
-
-  * Pipewire 0.3
 
 Debs:
 
-  * network-manager-gnom: supersedes Ubuntu focal's version, hides unmanaged interfaces (eg virtualbox, docker, etc)
+  * network-manager-gnome: supersedes Ubuntu hirsute's version, hides unmanaged interfaces (eg virtualbox, docker, etc)
+  * wayland 1.19 (required for sway 1.6+)
 
 # Prepare your system's environment
 
@@ -45,7 +45,7 @@ Some operations require root to complete. While building `sudo` will be run at s
 
 # Note: `meson` and `ninja`
 
-Make sure you uninstall `meson` and `ninja` if you've already installed them via Ubuntu's package manager. We need newer versions than what's available in 20.04 and we'll be installing the latest versions using `pip` instead.
+Make sure you uninstall `meson` and `ninja` if you've already installed them via Ubuntu's package manager. We need newer versions than what's available in 21.04 and we'll be installing the latest versions using `pip` instead.
 
 # Dependencies
 
@@ -65,6 +65,12 @@ Have a look at the [Makefile](Makefile) for all the different build targets, in 
 
 ```
 make core
+```
+
+If you just want to update the apps (not wlroots and sway):
+
+```
+make apps
 ```
 
 ## Updating repositories before building
@@ -100,10 +106,75 @@ sudo ninja -C build uninstall
 
 If you deleted the `build` folder on the app, simply build the app again before running the command above.
 
+
 # wlroots dependencies
 
 This goes without saying, but if you're updating `wlroots` make sure it's built first so that any of the other apps that link against it (like `sway`) have the right version to link against instead of linking against the version you're replacing.
 
-# Experimental apps
+# Screen sharing
 
-These are not included in the `yolo` target. These are apps I've put in there to try stuff but that I don't necessarily know if they'll break something down the line. For instance, `pipewire` (needed for screen sharing against `xdg-desktop-portal`) is not yet a thing in Ubuntu and should be alright, but it is a system dependency other apps might have dependencies on (Firefox might come in the future with it, or chrome, or require the system's version).
+Ubuntu 21.04 finally comes with all the plumbing to make it all work:
+  * pipewire 0.3
+  * xdg-desktop-portal-gtk with the correct build flags
+
+
+## Limitations
+
+xdg-desktop-portal-wlr does not support window sharing, [only entire outputs](https://github.com/emersion/xdg-desktop-portal-wlr/wiki/FAQ). No way around this. Apps won't show anything on the window list.
+
+## How to install
+
+```
+make xdg-desktop-portal-wlr -e UPDATE=true
+```
+
+This will compile & install & make available the wlr portal to xdg-desktop-portal.
+
+After that, make sure systemd has the following env var `XDG_CURRENT_DESKTOP=sway`. This won't work by merely setting that env var before you start sway. The best way is to create a file containing that at `~/.config/environment.d/xdg.conf`, [like so](https://github.com/luispabon/sway-dotfiles/blob/master/configs/environment.d/xdg.conf). Then reboot.
+
+## Choosing an output to share
+
+When choosing to share a screen from an app, xdpw won't give it a list of available windows or screens to the app to display and for you to choose from. Instead, you'll need to tell your app to share everything and after that the xdpw's output chooser will kick in.
+
+By default it'll be `slurp` - your cursor will change to a crosshairs and you'll be able to click on a screen to share only that one.
+
+The chooser is configurable, see docs here:
+https://github.com/emersion/xdg-desktop-portal-wlr/blob/master/xdg-desktop-portal-wlr.5.scd#output-chooser
+
+For instance, if you'd like to use wofi/dmenu, place the following on `~/config/xdg-desktop-portal-wlr/config`
+
+```
+[screencast]
+chooser_type=dmenu
+chooser_cmd=wofi --show=dmenu
+```
+
+The actual defaults (if you had no config file) are:
+
+```
+[screencast]
+chooser_type=simple
+chooser_cmd="slurp -f %o -o"
+```
+
+## Firefox
+
+Should work out of the box on Firefox 84+ using the wayland backend.
+
+When you start screensharing, on the dialog asking you what to share tell it to "Use operating system settings" when prompted. After that, the output chooser for xdpw will kick in, as explained on the previous section.
+
+## Chromium
+
+Ubuntu's Chromium snap currently does not seem to have webrtc pipewire support.
+
+## Chrome
+
+Open `chrome://flags` and flip `WebRTC PipeWire support` to `enabled`. Should work after that.
+
+### Note
+It looks like this option has disappeared and is not available anymore.
+
+# Known issues
+Nothing at the moment.
+
+
